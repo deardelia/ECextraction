@@ -1,1 +1,1 @@
-# ECextraction
+# Emotion Cause Extraction
