@@ -84,6 +84,13 @@ class ACNN(object):
           euclidean = tf.sqrt(tf.reduce_sum(tf.square(x1 - tf.matrix_transpose(x2)), axis=1))
           return 1 / (1 + euclidean)
 
+
+      def attention_machanism(x1, x2):
+          x = tf.multiply(x1, x2)
+          # ATTENTION STARTS HERE
+          attention_mul = tf.multiply(tf.nn.softmax(x), x)
+          return attention_mul
+
       def convolution(name_scope, x, d, reuse):
           with tf.name_scope(name_scope + "-conv"):
               with tf.variable_scope("conv") as scope:
@@ -154,20 +161,23 @@ class ACNN(object):
           cell = gru_cell()
           return tf.contrib.rnn.DropoutWrapper(cell, output_keep_prob=drop_keep_gru)
 
+
+
       x1_expanded = tf.expand_dims(self.input_x, -1)#(?, 41, 128,1)
       x2_expanded = tf.expand_dims(self.input_emotion, -1)
       #print(x1_expanded.get_shape().as_list())
       #print(x2_expanded.get_shape().as_list())
 
+      L_init1 = attention_machanism(x1_expanded, x2_expanded)
+      L_init2 = x2_expanded
 
 
-
-      LO_0 = all_pool(variable_scope="input-left", x=x1_expanded)#(?, 128)
-      RO_0 = all_pool(variable_scope="input-right", x=x2_expanded)
+      LO_0 = all_pool(variable_scope="input-left", x=L_init1)#(?, 128)
+      RO_0 = all_pool(variable_scope="input-right", x=L_init2)
       #print(LO_0.get_shape().as_list())
       #print(RO_0.get_shape().as_list())
 
-      LI_1, LO_1, RI_1, RO_1 = CNN_layer(variable_scope="CNN-1", x1=x1_expanded, x2=x2_expanded, d=embedding_size)
+      LI_1, LO_1, RI_1, RO_1 = CNN_layer(variable_scope="CNN-1", x1=L_init1, x2=L_init2, d=embedding_size)
       sims = [cos_sim(LO_0, RO_0), cos_sim(LO_1, RO_1)]
 
       _, LO_2, _, RO_2 = CNN_layer(variable_scope="CNN-2", x1=LI_1, x2=RI_1, d=50)
