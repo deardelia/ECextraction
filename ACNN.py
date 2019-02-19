@@ -17,6 +17,7 @@ class ACNN(object):
       self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
       self.features = tf.placeholder(tf.float32, shape=[None, num_features], name="features")
       self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
+      self.length = sequence_length
 
       with tf.device('/cpu:0'), tf.name_scope("embedding"):
           self.W = tf.Variable(
@@ -86,8 +87,11 @@ class ACNN(object):
 
 
       def attention_machanism(x1, x2):
-          x = tf.multiply(x1, x2)
+
           # ATTENTION STARTS HERE
+          post_att = tf.expand_dims(tf.convert_to_tensor([(1 - i/self.length) for i in range(self.length)]),-1)
+          post_matrix = tf.reshape(tf.reduce_sum(tf.tensordot(tf.transpose(x1,[1,0,2,3]), post_att, 0),-2), x2.get_shape())
+          x = tf.multiply(post_matrix, x2)
           attention_mul = tf.multiply(tf.nn.softmax(x), x)
           return attention_mul
 
