@@ -43,7 +43,7 @@ post_matrix = tf.reshape(tf.reduce_sum(tf.tensordot(tf.transpose(x1,[1,0,2,3]), 
 ## Please Attention
 ```
 In the last few months, we have received several feedbacks from readers and we really appreciate your suggestions and patience. 
-In order to make our source code more understandable and much easier to be achieved, we decide to refactoring the whole code within one week(from 06/18/2019-06/25/2019).  
+In order to make our source code more understandable and much easier to be achieved, we decide to refactoring the whole code within two week(from 06/18/2019-07/3/2019).  
 We applogize for the incoming inconvenience and thanks again for your patience.
 If you have some questions, feel freely to contact yuxinyi@buaa.edu.cn.
 ```
