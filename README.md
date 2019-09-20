@@ -8,7 +8,8 @@ description and the whole document.
 In this research we proposed a Hierarchical Network Based Clause Selection (HCS) framework in which the similarity is calculated by considering document features from word’s position, different semantic level (word and phrase) and interaction among clauses, respectively. 
 ## Experiment Detials
 ### Dataset
-Experimental study on a Chinese emotion-cause corpus has shown the proposed framework’s effectiveness and potential of integrating different level’s information.
+Experimental study on a Chinese emotion-cause corpus has shown the proposed framework’s effectiveness and potential of integrating different level’s information. The overview of dataset is like this:
+![]( image.png) 
 
 ### World Level Attention
 - `Position`
