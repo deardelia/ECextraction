@@ -9,7 +9,7 @@ class ACNN(object):
   Uses an embedding layer, followed by a convolutional, max-pooling and softmax layer.
   """
   def __init__(
-      self, sequence_length, emotion_length, num_classes, vocab_size,
+      self, dim, sequence_length, emotion_length, num_classes, vocab_size,
     embedding_size, filter_sizes, filter_emotion_sizes, num_filters, hidden_dim, num_layers, drop_keep_gru,learning_rate,window_size, num_features, l2_reg_lambda=0.0004):
       # Placeholders for input, output and dropout
       self.x = tf.placeholder(tf.int32, [None, sequence_length], name="x")
@@ -153,11 +153,11 @@ class ACNN(object):
 
 
       # BiGRU
-      '''def lstm_cell():  # 
+      '''def lstm_cell():  # lstm核
           return tf.contrib.rnn.BasicLSTMCell(hidden_dim, state_is_tuple=True)'''
-      def gru_cell():  # 
+      def gru_cell():  # gru核
           return tf.contrib.rnn.GRUCell(hidden_dim)
-      def dropout():  # 
+      def dropout():  # 为每一个rnn核后面加一个dropout层
           '''if (self.config.rnn == 'lstm'):
               cell = lstm_cell()
           else:
@@ -172,7 +172,6 @@ class ACNN(object):
       #print(x1_expanded.get_shape().as_list())
       #print(x2_expanded.get_shape().as_list())
 
-      """attention can be added if needed"""
       #L_init1 = attention_machanism(x1_expanded, x2_expanded)
       #L_init2 = x2_expanded
 
@@ -218,22 +217,27 @@ class ACNN(object):
           # print("cells: ", tf.shape(cells))
           rnn_cell = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
           _outputs, _ = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=x_combine, dtype=tf.float32)
-          last = _outputs[:, -1, :]  # 
+          last = _outputs[:, -1, :]  # 取最后一个时序输出作为结果
 
       with tf.name_scope("score"):
+          # 全连接层，后面接dropout以及relu激活
           fc = tf.layers.dense(last, hidden_dim, name='fc1')
           fc = tf.contrib.layers.dropout(fc, drop_keep_gru)
           fc = tf.nn.relu(fc)
 
+          # 分类器
           self.logits = tf.layers.dense(fc, num_classes, name='fc2')
-          self.y_pred_cls = tf.argmax(tf.nn.softmax(self.logits), 1)  # 
+          self.y_pred_cls = tf.argmax(tf.nn.softmax(self.logits), 1)  # 预测类别
 
       with tf.name_scope("optimize"):
+          # 损失函数，交叉熵
           cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.input_y)
           self.loss = tf.reduce_mean(cross_entropy)
+          # 优化器
           self.optim = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.loss)
 
       with tf.name_scope("accuracy"):
+          # 准确率
           correct_pred = tf.equal(tf.argmax(self.input_y, 1), self.y_pred_cls)
           self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
