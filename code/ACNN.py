@@ -12,10 +12,10 @@ class ACNN(object):
       self, sequence_length, emotion_length, num_classes, vocab_size,
     embedding_size, filter_sizes, filter_emotion_sizes, num_filters, hidden_dim, num_layers, drop_keep_gru,learning_rate,window_size, num_features, l2_reg_lambda=0.0004):
       # Placeholders for input, output and dropout
-      self.x = tf.placeholder(tf.int32, [64, sequence_length], name="x")
-      self.emotion = tf.placeholder(tf.int32, [64, sequence_length], name="emotion")
-      self.input_y = tf.placeholder(tf.float32, [64, num_classes], name="input_y")
-      self.features = tf.placeholder(tf.float32, shape=[64, num_features], name="features")
+      self.x = tf.placeholder(tf.int32, [None, sequence_length], name="x")
+      self.emotion = tf.placeholder(tf.int32, [None, sequence_length], name="emotion")
+      self.input_y = tf.placeholder(tf.float32, [None, num_classes], name="input_y")
+      self.features = tf.placeholder(tf.float32, shape=[None, num_features], name="features")
       self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
       self.length = sequence_length
 
