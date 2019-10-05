@@ -172,16 +172,16 @@ class ACNN(object):
       #print(x1_expanded.get_shape().as_list())
       #print(x2_expanded.get_shape().as_list())
 
-      L_init1 = attention_machanism(x1_expanded, x2_expanded)
-      L_init2 = x2_expanded
+      #L_init1 = attention_machanism(x1_expanded, x2_expanded)
+      #L_init2 = x2_expanded
 
 
-      LO_0 = all_pool(variable_scope="input-left", x=L_init1)#(?, 128)
-      RO_0 = all_pool(variable_scope="input-right", x=L_init2)
+      LO_0 = all_pool(variable_scope="input-left", x=x1_expanded)#(?, 128)
+      RO_0 = all_pool(variable_scope="input-right", x=x2_expanded)
       #print(LO_0.get_shape().as_list())
       #print(RO_0.get_shape().as_list())
 
-      LI_1, LO_1, RI_1, RO_1 = CNN_layer(variable_scope="CNN-1", x1=L_init1, x2=L_init2, d=embedding_size)
+      LI_1, LO_1, RI_1, RO_1 = CNN_layer(variable_scope="CNN-1", x1=x1_expanded, x2=x2_expanded, d=embedding_size)
       sims = [cos_sim(LO_0, RO_0), cos_sim(LO_1, RO_1)]
 
       _, LO_2, _, RO_2 = CNN_layer(variable_scope="CNN-2", x1=LI_1, x2=RI_1, d=50)
