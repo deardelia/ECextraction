@@ -9,6 +9,8 @@ import data_helpers
 from ACNN import ACNN
 from tensorflow.contrib import learn
 from sklearn import metrics
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_recall_fscore_support
 
 import jieba
 # Parameters
@@ -16,8 +18,8 @@ import jieba
 
 # Data loading params
 tf.flags.DEFINE_float("dev_sample_percentage", .1, "Percentage of the training data to use for validation")
-tf.flags.DEFINE_string("positive_data_file", "./data/chinese/pos.txt", "Data source for the positive data.")
-tf.flags.DEFINE_string("negative_data_file", "./data/chinese/neg.txt", "Data source for the negative data.")
+#tf.flags.DEFINE_string("positive_data_file", "./data/chinese/pos.txt", "Data source for the positive data.")
+#tf.flags.DEFINE_string("negative_data_file", "./data/chinese/neg.txt", "Data source for the negative data.")
 
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim", 128, "Dimensionality of character embedding (default: 128)")
@@ -32,6 +34,7 @@ tf.flags.DEFINE_float("learning_rate", 1e-3, "Learning rate in gru (default: 1e-
 tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularization lambda (default: 0.0)")
 tf.flags.DEFINE_integer("window_size", 4, "The size of filter window (default: 4)")
 tf.flags.DEFINE_integer("num_features", 64, "The size of num_features (default: 64)")
+tf.flags.DEFINE_integer("dim", 5, "The size of dim (default: 5)")
 
 # Training parameters
 # tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
@@ -103,6 +106,7 @@ with tf.Graph().as_default():
   sess = tf.Session(config=session_conf)
   with sess.as_default():
     cnn = ACNN(
+      dim=FLAGS.dim,
       sequence_length=sequence_length,
       emotion_length=emotion_length,
       num_classes=y_train.shape[1],
@@ -185,7 +189,7 @@ with tf.Graph().as_default():
        # [train_op, global_step, train_summary_op, cnn.loss, cnn.accuracy],
         #feed_dict)
       time_str = datetime.datetime.now().isoformat()
-      print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+      #print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
       train_summary_writer.add_summary(summaries, step)
       return [prediction, y_true]
 
@@ -205,7 +209,7 @@ with tf.Graph().as_default():
       time_str = datetime.datetime.now().isoformat()
       #
       #print("okkkkkk")
-      print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+      #print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
       if writer:
         writer.add_summary(summaries, step)
 
@@ -229,12 +233,14 @@ with tf.Graph().as_default():
       x_batch, x_emotion_batch, y_batch = zip(*batch)
       prediction, y_true = train_step(x_batch, x_emotion_batch, y_batch)
       prediction_totall += prediction.tolist()
+      #print("******************** y_true, prediction", y_true, prediction)
       y_true_total += y_true.tolist()
       count = count + 1
       if (count % 10 == 0):
-        precision, recall, f1 = caculate_matricx(np.array(y_true_total), np.array(prediction_totall))
-        print("################################# Matricx ##########################\n")
+        precision, recall, f1, taken = precision_recall_fscore_support(y_true_total, prediction_totall, average='weighted')
 
+        print("################################# Matricx ##########################\n")
+        #print(y_true_total, prediction_totall)
         print("precision {:g}, recall {:g}, f1 {:g}".format(precision, recall, f1))
         count = 0
         prediction_totall = []
